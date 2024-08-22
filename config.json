@@ -1,0 +1,40 @@
+{
+  "app": {
+    "name": "URL-Rotator-Go",
+    "author": "Nopaleon Bonaparte",
+    "author_link": "https://github.com/n0paleon",
+    "timezone": "Asia/Jakarta",
+    "domain": "localhost",
+    "scheme": "http"
+  },
+  "log": {
+    "level": -1,
+    "encoding": "console",
+    "output_file": false
+  },
+  "task_pool": {
+    "size": 500
+  },
+  "service": {
+    "http": {
+      "host": "",
+      "port": 80,
+      "prefork": false
+    }
+  },
+  "database": {
+    "postgres": {
+      "host": "localhost",
+      "port": 5432,
+      "user": "*",
+      "pass": "*",
+      "dbname": "*",
+      "migrations_path": "./migrations"
+    },
+    "redis": {
+      "addr": "localhost:6379",
+      "passwd": "turulabsec",
+      "db": 0
+    }
+  }
+}

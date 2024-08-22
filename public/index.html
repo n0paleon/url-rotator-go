@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener & Rotator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        h1 {
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            margin-bottom: 16px;
+            resize: vertical;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            margin-bottom: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .description {
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #555;
+        }
+        .result-field {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            white-space: pre-wrap;
+            height: auto;
+            overflow-y: auto;
+            box-sizing: border-box;
+            margin-top: 20px;
+        }
+        .error-message, .success-message {
+            margin: 0;
+            line-height: 1.5;
+            text-align: left;
+        }
+        .error-message {
+            color: #dc3545;
+        }
+        .success-message {
+            color: #28a745;
+        }
+        .result-field .label {
+            font-weight: bold;
+        }
+        a {
+            color: black;
+        }
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+        }
+        footer a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>URL Rotator</h1>
+    <form id="urlForm">
+        <label for="urls">Masukan URLs (satu link per baris):</label>
+        <textarea id="urls" name="urls" rows="15" placeholder="Enter your URLs here..."></textarea>
+
+        <label for="strategy">Pilih Strategi:</label>
+        <select id="strategy" name="strategy">
+            <option value="RNDM">Random (RNDM)</option>
+            <option value="RR">Round Robin (RR)</option>
+        </select>
+
+        <div class="description">
+            <p><strong>Random:</strong> URL akan dirotasi secara random.</p>
+            <p><strong>Round Robin:</strong> URL akan dirotasi secara seimbang berdasarkan total visit nya.</p>
+        </div>
+
+        <button type="submit">Submit</button>
+    </form>
+    <div id="resultField" class="result-field"></div>
+    <footer>
+        <h3>Credit: <a href="https://github.com/n0paleon" target="_blank">n0paleon</a></h3>
+    </footer>
+</div>
+
+<script>
+    document.getElementById('urlForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const textarea = document.getElementById('urls');
+        const urls = textarea.value.split('\n').filter(url => url.trim() !== '');
+        const strategy = document.getElementById('strategy').value;
+
+        const resultField = document.getElementById('resultField');
+        resultField.innerHTML = '';
+
+        if (urls.length === 0) {
+            resultField.textContent = 'No URLs provided.';
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/shorten', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    urls: urls,
+                    strategy: strategy
+                }),
+            });
+
+            const data = await response.json();
+
+            const p = document.createElement('p');
+            if (data.error) {
+                p.className = 'error-message';
+                p.textContent = `Error: ${data.message}`;
+            } else {
+                p.className = 'success-message';
+                p.innerHTML = `<span class="label">Shortened URL:</span> <a href="${data.data.url}" target="_blank">${data.data.url}</a><br>`;
+                p.innerHTML += `<span class="label">Strategy:</span> ${data.data.strategy}<br>`
+                p.innerHTML += `<span class="label">Created at:</span> ${data.data.created_at}`
+            }
+            resultField.appendChild(p);
+        } catch (error) {
+            console.error('Error shortening URLs:', error);
+            const p = document.createElement('p');
+            p.className = 'error-message';
+            p.textContent = `Error: ${error.message}`;
+            resultField.appendChild(p);
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+version: '3.8'
+name: 'url-rotator-go'
+
+services:
+  postgres:
+    container_name: 'postgres'
+    image: 'postgres:latest'
+    environment:
+      POSTGRES_USER: urlrotatorgo
+      POSTGRES_PASSWORD: urlrotatorgo
+      POSTGRES_DB: urlrotatorgo
+    ports:
+      - ":5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      url-rotator-go:
+        ipv4_address: 172.47.0.3
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -d urlrotatorgo -U urlrotatorgo"]
+      interval: 10s
+      retries: 5
+      start_period: 3s
+      timeout: 3s
+
+  redis:
+    container_name: 'redis'
+    image: 'redis:latest'
+    ports:
+      - ":6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      url-rotator-go:
+        ipv4_address: 172.47.0.4
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 10s
+      retries: 5
+      start_period: 3s
+      timeout: 3s
+
+  app:
+    container_name: 'url-rotator-go'
+    image: 'nopaleon/url-rotator-go:latest'
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      VP_DATABASE.POSTGRES.HOST: postgres
+      VP_DATABASE.POSTGRES.PORT: 5432
+      VP_DATABASE.POSTGRES.USER: urlrotatorgo
+      VP_DATABASE.POSTGRES.PASS: urlrotatorgo
+      VP_DATABASE.POSTGRES.DBNAME: urlrotatorgo
+      VP_DATABASE.REDIS.ADDR: redis:6379
+      VP_DATABASE.REDIS.DB: 0
+      VP_APP.DOMAIN: localhost
+      VP_APP.SCHEME: http
+      VP_SERVICE.HTTP.PREFORK: false
+    ports:
+      - "80:80"
+    networks:
+      url-rotator-go:
+        ipv4_address: 172.47.0.2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: on-failure
+
+networks:
+  url-rotator-go:
+    ipam:
+      config:
+        - subnet: 172.47.0.0/16
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
