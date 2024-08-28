@@ -26,14 +26,14 @@
     "postgres": {
       "host": "localhost",
       "port": 5432,
-      "user": "*",
-      "pass": "*",
-      "dbname": "*",
+      "user": "url_rotator_user",
+      "pass": "url_rotator_user",
+      "dbname": "url_rotator_go",
       "migrations_path": "./migrations"
     },
     "redis": {
       "addr": "localhost:6379",
-      "passwd": "turulabsec",
+      "passwd": "",
       "db": 0
     }
   }

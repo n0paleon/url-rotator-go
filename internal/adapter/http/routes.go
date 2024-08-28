@@ -4,6 +4,7 @@ import (
 	"URLRotatorGo/internal/adapter/http/dto"
 	"URLRotatorGo/internal/adapter/http/handler"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"time"
 )
@@ -26,7 +27,9 @@ func NewRouter(
 func (r *Router) SetupRoutes() {
 	route := r.app.Group("")
 
-	route.Get("/", r.urlHandler.Index)
+	route.Get("/", etag.New(etag.Config{
+		Weak: true,
+	}), r.urlHandler.Index)
 	route.Use("/api/shorten", limiter.New(limiter.Config{
 		Max:        15,
 		Expiration: time.Minute,
