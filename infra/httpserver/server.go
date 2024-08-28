@@ -20,14 +20,16 @@ import (
 
 func InitServer(lc fx.Lifecycle, cfg *viper.Viper) *fiber.App {
 	app := fiber.New(fiber.Config{
-		AppName:           cfg.GetString("app.name"),
-		CaseSensitive:     true,
-		EnablePrintRoutes: true,
-		JSONEncoder:       sonic.Marshal,
-		JSONDecoder:       sonic.Unmarshal,
-		StrictRouting:     true,
-		WriteTimeout:      10 * time.Second,
-		Prefork:           cfg.GetBool("service.http.prefork"),
+		AppName:            cfg.GetString("app.name"),
+		CaseSensitive:      true,
+		EnablePrintRoutes:  true,
+		JSONEncoder:        sonic.Marshal,
+		JSONDecoder:        sonic.Unmarshal,
+		StrictRouting:      true,
+		WriteTimeout:       10 * time.Second,
+		Prefork:            cfg.GetBool("service.http.prefork"),
+		ProxyHeader:        "Cf-Connecting-Ip",
+		EnableIPValidation: true,
 	})
 
 	app.Use(recover.New(recover.ConfigDefault))
@@ -35,6 +37,7 @@ func InitServer(lc fx.Lifecycle, cfg *viper.Viper) *fiber.App {
 	app.Use(fiberzap.New(fiberzap.Config{
 		Logger: logger.L.Desugar(),
 		Levels: []zapcore.Level{zapcore.InfoLevel},
+		Fields: []string{"latency", "status", "ip", "method", "url"},
 	}))
 
 	app.Use(func(c *fiber.Ctx) error {

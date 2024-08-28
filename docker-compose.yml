@@ -2,7 +2,7 @@ name: 'url-rotator-go'
 
 services:
   postgres:
-    container_name: 'postgres'
+    container_name: 'rotator-postgres'
     image: 'postgres:latest'
     environment:
       POSTGRES_USER: urlrotatorgo
@@ -23,7 +23,7 @@ services:
       timeout: 3s
 
   redis:
-    container_name: 'redis'
+    container_name: 'rotator-redis'
     image: 'redis:latest'
     ports:
       - ":6379"
