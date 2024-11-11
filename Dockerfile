@@ -1,5 +1,5 @@
 # stage 1: build the binary
-FROM golang:1.22.5-alpine AS builder
+FROM golang:1.23.3-alpine AS builder
 WORKDIR /app
 # install build dependencies
 RUN apk add --no-cache git
